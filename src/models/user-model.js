@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -8,11 +7,6 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     minlength: [3, 'Username must be at least 3 characters'],
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
   },
   firstName: {
     type: String,
@@ -31,7 +25,7 @@ const UserSchema = new mongoose.Schema({
     required: [true, 'Phone number is required'],
     unique: true,
     trim: true,
-    match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number'], 
+    match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number'],
   },
   reference: {
     type: String,
@@ -42,7 +36,7 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-UserSchema.statics.createAccount = async function (username, password, firstName, lastName, phoneNumber, reference) {
+UserSchema.statics.createAccount = async function (username, firstName, lastName, phoneNumber, reference) {
   const exists = await this.findOne({
     $or: [{ username }, { phoneNumber }, { reference }],
   });
@@ -58,12 +52,8 @@ UserSchema.statics.createAccount = async function (username, password, firstName
     }
   }
 
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(password, salt);
-
   const user = await this.create({
     username,
-    password: hash,
     firstName,
     lastName,
     phoneNumber,
@@ -72,19 +62,14 @@ UserSchema.statics.createAccount = async function (username, password, firstName
   return user;
 };
 
-UserSchema.statics.login = async function (username, password) {
-  if (!username || !password) {
-    throw new Error('Username and password are required');
+UserSchema.statics.login = async function (phoneNumber, reference) {
+  if (!phoneNumber || !reference) {
+    throw new Error('Phone number and reference are required');
   }
 
-  const user = await this.findOne({ username });
+  const user = await this.findOne({ phoneNumber, reference });
   if (!user) {
-    throw new Error('Invalid username');
-  }
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    throw new Error('Invalid password');
+    throw new Error('Invalid phone number or reference');
   }
 
   return user;

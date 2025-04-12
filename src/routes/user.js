@@ -3,15 +3,16 @@ const router = express.Router();
 const { createAccount, loginUser } = require('../controllers/user-controller');
 
 const validateInput = (req, res, next) => {
-  const { username, password, firstName, lastName, phoneNumber, reference } = req.body;
   if (req.path === '/signup') {
-    if (!username || !password || !firstName || !lastName || !phoneNumber || !reference) {
+    const { username, firstName, lastName, phoneNumber, reference } = req.body;
+    if (!username || !firstName || !lastName || !phoneNumber || !reference) {
       return res.status(400).json({ error: 'All fields are required' });
     }
   }
   if (req.path === '/login') {
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+    const { phoneNumber, reference } = req.body;
+    if (!phoneNumber || !reference) {
+      return res.status(400).json({ error: 'Phone number and reference are required' });
     }
   }
   next();

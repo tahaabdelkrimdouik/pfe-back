@@ -7,20 +7,20 @@ const createToken = (_id) => {
 };
 
 const loginUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { phoneNumber, reference } = req.body;
   try {
-    const user = await User.login(username, password);
+    const user = await User.login(phoneNumber, reference);
     const token = createToken(user._id);
-    res.status(200).json({ username, token });
+    res.status(200).json({ username: user.username, phoneNumber, reference, token });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
 };
 
 const createAccount = async (req, res) => {
-  const { username, password, firstName, lastName, phoneNumber, reference } = req.body;
+  const { username, firstName, lastName, phoneNumber, reference } = req.body;
   try {
-    const user = await User.createAccount(username, password, firstName, lastName, phoneNumber, reference);
+    const user = await User.createAccount(username, firstName, lastName, phoneNumber, reference);
     const token = createToken(user._id);
     res.status(201).json({ username, firstName, lastName, phoneNumber, reference, token });
   } catch (error) {
