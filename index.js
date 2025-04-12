@@ -1,45 +1,29 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const cors = require('cors'); 
+const compression = require('compression');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 const uri = process.env.MONGODB_URI;
 
-// Create a MongoClient
-const client = new MongoClient(uri);
-
-async function connectToMongoDB() {
-  try {
-    // Connect to MongoDB Atlas
-    await client.connect();
-    console.log('Connected to MongoDB Atlas');
-
-    // Select the database
-    const db = client.db('database_pfe');
-    const collection = db.collection('users');
-
-    // Example: Insert a document
-    await collection.insertOne({ name: 'John Doe', email: 'john@example.com' });
-    console.log('Document inserted');
-
-    // Example: Query documents
-    const users = await collection.find({}).toArray();
-    console.log('Users:', users);
-  } catch (error) {
+mongoose.connect(uri)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((error) => {
     console.error('Error connecting to MongoDB:', error);
-  }
-}
+  });
 
-// Run the connection
-connectToMongoDB();
+const userRoutes = require('./src/routes/user');
 
-// Basic Express route
-app.get('/', (req, res) => {
-  res.send('Node.js with MongoDB Atlas!');
-});
+app.use(cors());
+app.use(compression());
+app.use(express.json());
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.use('/api/user', userRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
